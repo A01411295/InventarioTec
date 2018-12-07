@@ -83,7 +83,9 @@ function getTableData($table){
             }else{
                 $row["accion"]="arrendamiento";
             }
-            $row["imagen"] = '<img class="img-fluid" src="images/'.$row["imagen"].'" alt="imagen no disp">';
+            if(isset($row["imagen"])){
+                $row["imagen"] = '<a href="images/'.$row["imagen"].'"> <img class="img-fluid" width="42" src="images/'.$row["imagen"].'" alt=""></a>';
+            }
             $edit = '<div><a class="edit btn btn-block btn-outline-success" id="'.$table.'-'.$row["id"].'-edit"> <i class="fa fa-edit"></i> </a></div>';
             if($_SESSION["user"]["rol"]==0){
                 unset($row["users_id"]);
