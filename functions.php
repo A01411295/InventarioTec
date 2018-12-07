@@ -295,7 +295,7 @@ function changeEstadoArticulo($articuloId, $estado){
     $stmt = $pdo->prepare("UPDATE articulo SET estado = ".$estado." where id = ".$articuloId);
     try{
         $stmt->execute();
-        return "Registro insertado correctamente";
+        return "Éxito en la transacción";
     }catch (PDOException $e) {
         return "Error insertando registro";
     }
@@ -403,7 +403,7 @@ function editForm($table, $id){
                     break;
                 case (strpos($field["Field"], 'fecha_') !== false) :
                     $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
-                    $form.='<input '.htmlspecialchars($required).' type="text" name="'.htmlspecialchars($field["Field"]).'" class="datetimepicker form-control" id="'.$field["Field"].'">';
+                    $form.='<input '.htmlspecialchars($required).' type="text" name="'.htmlspecialchars($field["Field"]).'" class="datetimepicker form-control" id="'.$field["Field"].' placeholder= "'.$register[$field["Field"]].'" value= "'.$register[$field["Field"]].'">';
                     break;
                 default:
                 $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';

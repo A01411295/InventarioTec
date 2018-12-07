@@ -42,7 +42,7 @@
               <li class="nav-item">
                 <a id="users" class="nav-link item-nav">
                   <p>
-                    Alumnos
+                    Usuarios
                   </p>
                 </a>
               </li>
