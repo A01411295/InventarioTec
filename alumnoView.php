@@ -2,6 +2,7 @@
 readfile("header.html");
 ?>
   <!-- DataTables -->
+  <link rel="stylesheet" href="public/js/plugins/datetimepicker/jquery.datetimepicker.min.css">
   <link rel="stylesheet" href="public/js/plugins/datatables/dataTables.bootstrap4.css">
   </head>
 <?php
@@ -38,15 +39,19 @@ readfile("scripts.html");
 <!-- DataTables -->
 <script src="public/js/plugins/datatables/jquery.dataTables.js"></script>
 <script src="public/js/plugins/datatables/dataTables.bootstrap4.js"></script>
+<script src="public/js/plugins/datetimepicker/jquery.datetimepicker.full.min.js"></script>
 <?php readfile("alumnoScripts.html") ?>
 <script>
     let userRole = 0;
 $(document).ready(function(){
   clickNavLink();
   createModal();
-  loadCardSections();
-  
+  loadCardSections();  
+$(document).on("mouseover mouseout", ".datetimepicker", function(){
+    $(this).datetimepicker()
 });
+});
+
 </script>
 </body>
 </html>

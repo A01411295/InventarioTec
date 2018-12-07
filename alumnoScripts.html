@@ -123,6 +123,9 @@
         let options = {
           dataType: "json",
           beforeSubmit: function(){
+            $('.datetime').each( function() {
+                $(this).val(moment(new Date($(this).val())).format("YYYY-MM-DD HH:mm:ss"))
+            });
             $("#submitButton").prop("disabled", true);
           },
           success : function(response){

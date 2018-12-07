@@ -113,7 +113,8 @@ function getTableData($table){
                 if($row[2]==0){
                     $row[2]="disponible";
                 }else{
-                    $row[2]="no disponible";
+                    $responsable_name=getUserResponsable($row[0]);
+                    $row[2]="apartado - ".$responsable_name;
                 }
             }
             if($_SESSION["user"]["rol"]==0 && $table=="articulo"){
@@ -194,7 +195,7 @@ function createForm($model){
                     $form.='<label>'.htmlspecialchars($field["Field"]).'</label>
                     <select '.$required.' name="'.htmlspecialchars($field["Field"]).'" class="form-control">';
                     $form.='<option value="0">disponible</option>';
-                    $form.='<option value="1">no disponible</option>';
+                    $form.='<option value="1">apartado</option>';
                     $form.="</select>";
                     break;
                 case 'accion':
@@ -203,6 +204,10 @@ function createForm($model){
                     $form.='<option value="0">devolución</option>';
                     $form.='<option value="1">arrendamiento</option>';
                     $form.="</select>";
+                    break;
+                case (strpos($field["Field"], 'fecha_') !== false) :
+                    $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
+                    $form.='<input '.htmlspecialchars($required).' type="text" name="'.htmlspecialchars($field["Field"]).'" class="datetimepicker form-control" id="'.$field["Field"].'">';
                     break;
                 default:
                 $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
@@ -302,6 +307,7 @@ function editForm($table, $id){
     <input type = "hidden" name="id" value="'.$id.'">
                 <div class="modal-body">
                 <div class="row">';
+ 
     foreach ($namesAndTypes as $faKey => $field) {
         if($field["Field"] == "id" || $field["Field"] == "fecha") continue;
         if($field["Null"] == "NO"){
@@ -314,7 +320,7 @@ function editForm($table, $id){
         }else{
             $form .= '<div class="form-group col-6">';
         }
-        
+
         if($field["Key"] ==="MUL" ){
             $form.='<label>'.explode("_", $field["Field"])[0].'</label>
             <select '.$required.' name="'.htmlspecialchars($field["Field"]).'" class="form-control">';
@@ -375,7 +381,7 @@ function editForm($table, $id){
                     if($register[$field["Field"]]==1){
                         $form.="selected "; 
                     }
-                    $form.='value="1">no disponible</option>';
+                    $form.='value="1">apartado</option>';
                     $form.="</select>";
                     break;
                 case 'accion':
@@ -392,6 +398,10 @@ function editForm($table, $id){
                     }
                     $form.='value="1">arrendamiento</option>';
                     $form.="</select>";
+                    break;
+                case (strpos($field["Field"], 'fecha_') !== false) :
+                    $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
+                    $form.='<input '.htmlspecialchars($required).' type="text" name="'.htmlspecialchars($field["Field"]).'" class="datetimepicker form-control" id="'.$field["Field"].'">';
                     break;
                 default:
                 $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
@@ -465,12 +475,12 @@ function editRegister(){
 function userHistorialForm($table, $articulo_id, $user_id, $accion){
     if(isset($articulo_id)){
         $articulo_name = getNameFromId("articulo", $articulo_id);
-        $modalTitle = "Arrendar $articulo_name";
+        $modalTitle = "Apartar $articulo_name";
     }else{
         $modalTitle = "Devolver artículo";
     }
     $namesAndTypes = getColumnSpecs($table);
-    $onlyFields=array("imagen");
+    $onlyFields=array();
     $form= '<div class="modal-header">
                 <h5 class="modal-title" id="formModalTitle">'.$modalTitle.'</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -483,7 +493,10 @@ function userHistorialForm($table, $articulo_id, $user_id, $accion){
     <input type = "hidden" name="users_id" value="'.$user_id.'">';
     if(isset($articulo_id)){
         $form.='<input type = "hidden" name="articulo_id" value="'.$articulo_id.'">';
+        array_push($onlyFields, "fecha_inicio");
+        array_push($onlyFields, "fecha_entrega");
     }else{
+        array_push($onlyFields, "imagen");
         array_push($onlyFields, "articulo_id");
     }
     $form.='<input type = "hidden" name="accion" value="'.$accion.'">
@@ -536,6 +549,12 @@ function userHistorialForm($table, $articulo_id, $user_id, $accion){
                 </div>
                 </div>';
                     break;
+                case (strpos($field["Field"], 'fecha_') !== false) :
+                if($accion == 1){
+                    $form.='<label for="field-'.htmlspecialchars($field["Field"]).'">'.htmlspecialchars($field["Field"]).'</label>';
+                    $form.='<input required '.htmlspecialchars($required).' type="text" name="'.htmlspecialchars($field["Field"]).'" class="datetimepicker form-control" id="'.$field["Field"].'">';
+                }
+                    break;
                 default:
                     break;
             }
@@ -572,5 +591,14 @@ function getSpecificOptions($table, $wantedField, $referenceField, $referenceVal
         array_push($options, $row[0]);
     }
     return $options;
+}
+function getUserResponsable($articulo_id){
+    $pdo = $GLOBALS["pdo"];
+    $stmt = $pdo->prepare('SELECT users_id from historial where articulo_id = '.$articulo_id.' AND accion = 1 order by fecha desc limit 1');
+    $stmt->execute();
+    $user_id = $stmt->fetch(PDO::FETCH_NUM)[0];
+    $stmt = $pdo->prepare('SELECT nombre from users where id = '.$user_id);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_NUM)[0];
 }
 ?>

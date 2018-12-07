@@ -75,7 +75,11 @@ function getTableData(){
       "autoWidth": true,
       columnDefs: [
         { targets: 'no-sort', orderable: false }
-      ]
+      ],
+      dom: 'Bfrtip',
+       buttons: [
+       'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
     });
   });
 }
@@ -119,6 +123,9 @@ function getTableData(){
     let options = {
       dataType: "json",
       beforeSubmit: function(){
+        $('.datetime').each( function() {
+                $(this).val(moment(new Date($(this).val())).format("YYYY-MM-DD HH:mm:ss"))
+            });
         $("#submitButton").prop("disabled", true);
       },
       success : function(response){
