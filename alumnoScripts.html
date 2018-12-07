@@ -1,0 +1,142 @@
+<script>
+    function loadCardSections(){
+      $.ajax({
+        type: "POST",
+        url: "routes.php",
+        data: {"card-section":true},
+        dataType: "json",
+        success: function (response) {
+          let cardSections="";
+          response.forEach(card => {
+            let cardSection ='<div id="'+card.name+'-section" class="card-section row"><div class="col-12">\
+                <div class="card">\
+                  <div class="card-header row">\
+                    <div class="col-6">\
+                    <h3 class="card-title">'+card.title+'</h3>\
+                    </div>\
+                    <div class="col-6 ">\
+                      <div class="float-right">';
+                      if(userRole == 1){
+                    cardSection += '<a class="create btn btn-block btn-outline-success" id="'+card.name+'-new"> <i class="fa fa-plus-circle"></i> </a>';
+                      }else if(card.name == "historial"){
+                        cardSection += '<a class="return btn btn-block btn-outline-warning" id="'+card.name+'-return"> Regresar </a>';
+                      }
+                      cardSection += '</div>\
+                      </div>\
+                    </div>\
+                  <!-- /.card-header -->\
+                  <div class="card-body">\
+                    <table class="dataTable" style="width:100%" id ="table-'+card.name+'">\
+                    <thead>\
+                      <tr>';
+                        card.columns.forEach(column => {
+                        if(column == "Responsable" && userRole == 0){return;}
+                          if(column =="Id"){column = "#"}
+                          if(column != "Password"){
+                            cardSection+='<th>'+column+'</th>';
+                          }
+                        });
+                        if(userRole==1 || card.name == "articulo"){
+                        cardSection+='<th class="no-sort"></th>';
+                        }
+                      cardSection+='</tr>\
+                    </thead>\
+                  </table>\
+                  </div>\
+                  <!-- /.card-body -->\
+                </div>\
+                <!-- /.card -->\
+              </div>\
+              <!-- /.col -->\
+            </div>\
+            <!-- /.row -->';
+            cardSections+=cardSection;
+          });
+    
+          $("#cards-content").html(cardSections);
+          $(".card-section").hide();
+          getTableData();
+        }
+      });
+    }
+    function clickNavLink(){
+      $(document).on('click', '.item-nav', function(){
+          $(".card-section").hide();
+          $("#"+$(this).attr("id")+"-section").show();
+          $("#title").html($(this).attr("id"));
+      });
+    }
+    function getTableData(){
+      let dataTables = Array.from(document.getElementsByClassName("dataTable"));
+      dataTables.forEach(dataTable => {
+        let dtId = ($(dataTable).attr("id")).split("-")[1];
+        $(dataTable).DataTable({
+          "processing": true,
+          "serverSide": false,
+          "ajax":{
+            type: "POST",
+            url: "routes.php",
+            data: {"tableData":true, "table": dtId},
+            
+          },
+          "autoWidth": true,
+          columnDefs: [
+            { targets: 'no-sort', orderable: false }
+          ]
+        });
+      });
+    }
+    </script>
+    <script>
+      function createModal(){
+        $(document).on('click', '.arrendar', function(){
+          let model = ($(this).attr("id")).split("-")[0];
+          let id = ($(this).attr("id")).split("-")[1];
+          $.ajax({
+            type: "POST",
+            url: "routes.php",
+            data: {"arrendarForm" : true, "model" : model, "id" : id},
+            dataType: "html",
+            success: function (form) {
+              $("#formModalBody").html(form); 
+            submitForm();
+            $("#formModal").modal();
+            }
+          });
+        });
+        $(document).on('click', '.return', function(){
+          let model = ($(this).attr("id")).split("-")[0];
+          $.ajax({
+            type: "POST",
+            url: "routes.php",
+            data: {"returnForm" : true, "model" : model},
+            dataType: "html",
+            success: function (form) {
+              $("#formModalBody").html(form); 
+            submitForm();
+            $("#formModal").modal();
+            }
+          });
+        });
+      }
+      function submitForm(){
+        let options = {
+          dataType: "json",
+          beforeSubmit: function(){
+            $("#submitButton").prop("disabled", true);
+          },
+          success : function(response){
+            alert(response.message);
+            $('#table-'+response.table).DataTable().ajax.reload();
+            if(response.table == "historial"){
+                $('#table-articulo').DataTable().ajax.reload();
+                }
+            $("#formModal").modal("hide");
+            $("#submitButton").prop("disabled", false);
+          }
+        }
+      
+        $("#modalForm").ajaxForm(options); 
+      }
+      </script>
+      <script src="http://malsup.github.com/jquery.form.js"></script> 
